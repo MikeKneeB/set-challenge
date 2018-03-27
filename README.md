@@ -7,6 +7,8 @@ Intro to gpio: https://www.raspberrypi.org/documentation/usage/gpio/
 
 More info: https://pinout.xyz/
 
+If videos are more your thing: https://youtu.be/41IO4Qe5Jzw
+
 ## Python
 Tutorial for python and GPIO: https://learn.sparkfun.com/tutorials/raspberry-gpio/python-rpigpio-api
 
