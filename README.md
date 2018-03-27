@@ -18,3 +18,6 @@ Python module possibility: https://sourceforge.net/p/raspberry-gpio-python/wiki/
 Intro: http://hertaville.com/introduction-to-accessing-the-raspberry-pis-gpio-in-c.html
 
 C++ GPIO interface library: http://wiringpi.com/
+
+## Java
+Pi4J: http://pi4j.com/
