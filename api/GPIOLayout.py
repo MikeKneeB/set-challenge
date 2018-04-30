@@ -1,0 +1,28 @@
+# !/usr/bin/python
+# -*- coding: utf-8 -*-
+"""
+Defines the various Robot GPIO pins
+"""
+
+# Motor Pins
+MOTOR_LEFT_FORWARD_GPIO = 16 # pin 36
+MOTOR_LEFT_BACKWARD_GPIO = 19  # pin 35
+MOTOR_RIGHT_FORWARD_GPIO = 13 # pin 33
+MOTOR_RIGHT_BACKWARD_GPIO = 12 # pin 32
+
+# Define Sonar Pins
+SONAR_FRONT_TX_GPIO = 20  # Pin 38
+SONAR_FRONT_RX_GPIO = 20  # Pin 38
+SONAR_LEFT_TX_GPIO = 18  # Pin 12
+SONAR_LEFT_RX_GPIO = 22  # Pin 15
+SONAR_RIGHT_TX_GPIO = 6  # Pin 31
+SONAR_RIGHT_RX_GPIO = 23  # Pin 16
+
+# Line follower
+LINE_FOLLOWER_LEFT_GPIO = 4  # Pin 7
+LINE_FOLLOWER_MIDDLE_GPIO = 17  # Pin 11
+LINE_FOLLOWER_RIGHT_GPIO = 5  # Pin 29
+
+# Servo Pins
+SERVO_PAN_PIN = 22  # GPIO25
+SERVO_TILT_PIN = 18  # GPIO24
