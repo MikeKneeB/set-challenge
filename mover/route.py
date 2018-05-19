@@ -1,7 +1,9 @@
-import UltrasonicSensorThread
-import MotorController
-import GPIOLayout
-import SpeedSettings
+from api import (
+    UltrasonicSensorThread,
+    MotorController,
+    GPIOLayout,
+    SpeedSettings
+)
 
 class RoutePoint:
 
@@ -48,3 +50,6 @@ class RouteControl:
 
     def add_point(self, dist, rot):
         self.route.append(RoutePoint(dist, rot))
+
+    def rotate(self):
+        pass
