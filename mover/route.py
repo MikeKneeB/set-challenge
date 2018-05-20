@@ -36,7 +36,8 @@ class RouteControl:
         self._initial_distance = 0
         self._speed = SpeedSettings.SPEED_SLOW
         self._distance_difference = 0
-        self._dist_lock = Threading.Lock()
+        self._dist_lock = threading.Lock()
+        self._stop_event = threading.Event()
 
     def ultrasonic_callback(self, distance):
         with self._dist_lock:
@@ -59,13 +60,14 @@ class RouteControl:
             self._motor_controller.forward(SpeedSettings.SPEED_VERYSLOW)
             at_target = False
             while not at_target:
-                time.sleep(0.5)
-                with self._dist_lock:
-                    print(self._distance_difference)
-                    if (self._distance_difference < 5
-                     or self._distance_difference > -5):
-                        at_target = True
+                if not self._stop_event.wait(0.5):
+                    with self._dist_lock:
+                        print(self._distance_difference)
+                        close = self.route[0].distance - self._distance_difference
+                        if close < 5 or close > -5:
+                            at_target = True
             self._motor_controller.stop()
+            self.route.pop()
 
     def add_point(self, point):
         self.route.append(point)

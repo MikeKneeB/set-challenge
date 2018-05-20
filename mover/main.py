@@ -6,7 +6,7 @@ if __name__ == '__main__':
         print("Here we go.")
         control = route.RouteControl()
         print("Adding route point.")
-        control.add_point(30, 0)
+        control.add_point(100, 0)
         print("{} {}".format(control.route, control.route[0].distance))
         print("Starting")
         control.start()
