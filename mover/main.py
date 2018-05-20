@@ -1,4 +1,5 @@
 import route
+import time
 
 if __name__ == '__main__':
     try:
@@ -9,6 +10,8 @@ if __name__ == '__main__':
         print("{} {}".format(control.route, control.route[0].distance))
         print("Starting")
         control.start()
+        while (True):
+            time.sleep(5)
     except KeyboardInterrupt:
         pass
     finally:
