@@ -66,7 +66,7 @@ class RouteControl:
                     with self._dist_lock:
                         print(self._distance_difference)
                         close = self.route[0].distance - self._distance_difference
-                        if close < 5 or close > -5:
+                        if close < 5 and close > -5:
                             at_target = True
                 else:
                     self._motor_controller.stop()
