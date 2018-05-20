@@ -51,10 +51,12 @@ class RouteControl:
         self._sensor_thread.start()
         time.sleep(0.5)
         self._initial_distance = self._sensor_thread.read_data()
+        print("Done starting.")
 
     def stop(self):
         self._sensor_thread.exit_now()
         self._sensor_thread.join()
+        print("Done stopping.")
 
     def add_point(self, point):
         self.route.append(point)
