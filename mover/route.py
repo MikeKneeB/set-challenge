@@ -60,7 +60,7 @@ class RouteControl:
 
     def run(self):
         while self.route:
-            self._motor_controller.forward(SpeedSettings.SPEED_MEDIUM)
+            self._motor_controller.forward(SpeedSettings.SPEED_SLOW)
             at_target = False
             while not at_target:
                 if not self._stop_event.wait(0.5):
