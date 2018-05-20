@@ -48,7 +48,7 @@ class RouteControl:
         self._servo_controller.set_pan_servo(0)
         self._servo_controller.set_tilt_servo(0)
         self._sensor_thread.start()
-        time.sleep(0.5)
+        time.sleep(0.25)
         self._initial_distance = self._sensor_thread.read_data()
         t = threading.Thread(target = self.run)
         t.start()
@@ -63,7 +63,7 @@ class RouteControl:
             self._motor_controller.forward(SpeedSettings.SPEED_SLOW)
             at_target = False
             while not at_target:
-                if not self._stop_event.wait(0.5):
+                if not self._stop_event.wait(0.25):
                     with self._dist_lock:
                         print(self._distance_difference)
                         close = self.route[0].distance - self._distance_difference
