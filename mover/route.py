@@ -66,6 +66,7 @@ class RouteControl:
                     with self._dist_lock:
                         print(self._distance_difference)
                         close = self.route[0].distance - self._distance_difference
+                        print(close)
                         if close < 5 and close > -5:
                             at_target = True
                 else:
