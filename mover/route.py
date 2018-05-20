@@ -48,7 +48,12 @@ class RouteControl:
         self._servo_controller.set_pan_servo(0)
         self._servo_controller.set_tilt_servo(0)
         self._sensor_thread.start()
+        sleep
         self._initial_distance = self._sensor_thread.read_data()
+
+    def stop(self):
+        self._sensor_thread.exit_now()
+        self._sensor_thread.join()
 
     def add_point(self, point):
         self.route.append(point)
