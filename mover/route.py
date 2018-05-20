@@ -33,7 +33,7 @@ class RouteControl:
 
     def ultrasonic_callback(self, distance):
         print("{} - {}".format(self._initial_distance - distance,
-                               route[0].distance))
+                               self.route[0].distance))
         if self._initial_distance - distance == self.route[0].distance:
             self._motor_controller.stop()
             self.rotate()
@@ -42,7 +42,7 @@ class RouteControl:
             self._motor_controller.forward(self._speed)
 
     def start(self):
-        self._sensor_thead.start()
+        self._sensor_thread.start()
         self._initial_distance = self._sensor_thead.read_data()
 
     def add_point(self, point):
