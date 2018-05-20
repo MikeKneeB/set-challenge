@@ -31,6 +31,7 @@ class RouteControl:
             GPIOLayout.MOTOR_RIGHT_FORWARD_GPIO,
             GPIOLayout.MOTOR_RIGHT_BACKWARD_GPIO
         )
+        self._motor_controller.stop()
         self._servo_controller = ServoController.ServoController()
         self._servo_controller.start_servos()
         self._initial_distance = 0
@@ -59,7 +60,7 @@ class RouteControl:
 
     def run(self):
         while self.route:
-            self._motor_controller.forward(SpeedSettings.SPEED_VERYSLOW)
+            self._motor_controller.forward(SpeedSettings.SPEED_MEDIUM)
             at_target = False
             while not at_target:
                 if not self._stop_event.wait(0.5):
