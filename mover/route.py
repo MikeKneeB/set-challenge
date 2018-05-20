@@ -49,11 +49,13 @@ class RouteControl:
         self._sensor_thread.start()
         time.sleep(0.5)
         self._initial_distance = self._sensor_thread.read_data()
-        self.run()
+        t = threading.Thread(target = self.run)
+        t.start()
 
     def stop(self):
         self._sensor_thread.exit_now()
         self._sensor_thread.join()
+        self._stop_event.set()
 
     def run(self):
         while self.route:
@@ -66,6 +68,9 @@ class RouteControl:
                         close = self.route[0].distance - self._distance_difference
                         if close < 5 or close > -5:
                             at_target = True
+                else:
+                    self._motor_controller.stop()
+                    return
             self._motor_controller.stop()
             self.route.pop()
 
