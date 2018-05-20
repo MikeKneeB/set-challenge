@@ -5,6 +5,7 @@ from api import (
     GPIOLayout,
     SpeedSettings
 )
+import time
 
 class RoutePoint:
 
@@ -35,7 +36,7 @@ class RouteControl:
         self._speed = SpeedSettings.SPEED_SLOW
 
     def ultrasonic_callback(self, distance):
-        print("id: {} distance: {} goal: ".format(self._initial_distance, distance,
+        print("id: {} distance: {} goal: {}".format(self._initial_distance, distance,
                                self.route[0].distance))
         if self._initial_distance - distance == self.route[0].distance:
             self._motor_controller.stop()
@@ -48,7 +49,7 @@ class RouteControl:
         self._servo_controller.set_pan_servo(0)
         self._servo_controller.set_tilt_servo(0)
         self._sensor_thread.start()
-        sleep
+        time.sleep(0.5)
         self._initial_distance = self._sensor_thread.read_data()
 
     def stop(self):
