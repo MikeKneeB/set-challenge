@@ -1,6 +1,7 @@
 from api import (
     UltrasonicSensorThread,
     MotorController,
+    ServoController,
     GPIOLayout,
     SpeedSettings
 )
@@ -28,6 +29,8 @@ class RouteControl:
             GPIOLayout.MOTOR_RIGHT_FORWARD_GPIO,
             GPIOLayout.MOTOR_RIGHT_BACKWARD_GPIO
         )
+        self._servo_controller = ServoController.ServoController()
+        self._servo_controller.start_servos()
         self._initial_distance = 0
         self._speed = SpeedSettings.SPEED_SLOW
 
@@ -42,8 +45,10 @@ class RouteControl:
             self._motor_controller.forward(self._speed)
 
     def start(self):
+        self._servo_controller.set_pan_servo(0)
+        self._servo_controller.set_tilt_servo(0)
         self._sensor_thread.start()
-        self._initial_distance = self._sensor_thead.read_data()
+        self._initial_distance = self._sensor_thread.read_data()
 
     def add_point(self, point):
         self.route.append(point)
