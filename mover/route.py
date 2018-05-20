@@ -35,7 +35,7 @@ class RouteControl:
         self._speed = SpeedSettings.SPEED_SLOW
 
     def ultrasonic_callback(self, distance):
-        print("{} - {}".format(self._initial_distance - distance,
+        print("id: {} distance: {} goal: ".format(self._initial_distance, distance,
                                self.route[0].distance))
         if self._initial_distance - distance == self.route[0].distance:
             self._motor_controller.stop()
