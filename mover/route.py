@@ -6,6 +6,7 @@ from api import (
     SpeedSettings
 )
 import time
+import threading
 
 class RoutePoint:
 
@@ -34,16 +35,12 @@ class RouteControl:
         self._servo_controller.start_servos()
         self._initial_distance = 0
         self._speed = SpeedSettings.SPEED_SLOW
+        self._distance_difference = 0
+        self._dist_lock = Threading.Lock()
 
     def ultrasonic_callback(self, distance):
-        print("id: {} distance: {} goal: {}".format(self._initial_distance, distance,
-                               self.route[0].distance))
-        if self._initial_distance - distance == self.route[0].distance:
-            self._motor_controller.stop()
-            self.rotate()
-            self.route.pop()
-            self._initial_distance = self._sensor_thread.read_data()
-            self._motor_controller.forward(self._speed)
+        with self._dist_lock:
+            self._distance_difference = self._initial_distance - distance
 
     def start(self):
         self._servo_controller.set_pan_servo(0)
@@ -51,12 +48,24 @@ class RouteControl:
         self._sensor_thread.start()
         time.sleep(0.5)
         self._initial_distance = self._sensor_thread.read_data()
-        print("Done starting.")
+        self.run()
 
     def stop(self):
         self._sensor_thread.exit_now()
         self._sensor_thread.join()
-        print("Done stopping.")
+
+    def run(self):
+        while self.route:
+            self._motor_controller.forward(SpeedSettings.SPEED_VERYSLOW)
+            at_target = False
+            while not at_target:
+                time.sleep(0.5)
+                with self._dist_lock:
+                    print(self._distance_difference)
+                    if (self._distance_difference < 5
+                     or self._distance_difference > -5):
+                        at_target = True
+            self._motor_controller.stop()
 
     def add_point(self, point):
         self.route.append(point)
