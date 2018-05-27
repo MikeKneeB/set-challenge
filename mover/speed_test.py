@@ -2,6 +2,7 @@ from api import (
     ServoController,
     UltrasonicSensor,
     MotorController,
+    GPIOLayout,
     SpeedSettings
 )
 

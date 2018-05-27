@@ -4,5 +4,5 @@ motors, and so this file can be used to negate that difference by setting a
 small limit on either of the motors.
 '''
 
-LEFT_MOTOR_OFFSET = 0.
+LEFT_MOTOR_OFFSET = -25.
 RIGHT_MOTOR_OFFSET = 0.
