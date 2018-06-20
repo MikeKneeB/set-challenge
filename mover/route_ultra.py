@@ -103,4 +103,4 @@ class RouteControl:
         for i in range(200):
             print('{},{}'.format(i,
                  self._sensor_thread.read_data())
-            sleep(0.01)
+            time.sleep(0.01)
