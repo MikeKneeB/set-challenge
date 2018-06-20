@@ -1,9 +1,9 @@
-import route
+import route_ultra
 import time
 
 if __name__ == '__main__':
     try:
-        control = route.RouteControl()
+        control = route_ultra.RouteControl()
         print("Adding route point.")
         control.add_point(100, 0)
         print("{} {}".format(control.route, control.route[0].distance))
