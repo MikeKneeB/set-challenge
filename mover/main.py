@@ -3,7 +3,6 @@ import time
 
 if __name__ == '__main__':
     try:
-        print("Here we go.")
         control = route.RouteControl()
         print("Adding route point.")
         control.add_point(100, 0)

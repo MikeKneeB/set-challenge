@@ -6,4 +6,4 @@ if __name__ == '__main__':
             total += float(line)
             count += 1
     with open('ave_speed.py', 'w') as _file:
-        _file.write('AVE_SPEED = {}\n'.format(total/count))
+        _file.write('AVE_SPEED = {}\n'.format((total/count)/5))
