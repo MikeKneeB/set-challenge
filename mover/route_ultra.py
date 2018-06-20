@@ -99,8 +99,11 @@ class RouteControl:
         self.route.append(RoutePoint(dist, rot))
 
     def rotate(self):
-        self._motor_controller.spin_left(SpeedSettings.SPEED_MEDIUM)
+        self._sensor_thread.start()
+        self._motor_controller.spin_left(SpeedSettings.SPEED_FAST)
         for i in range(200):
             print('{},{}'.format(i,
                  self._sensor_thread.read_data()))
             time.sleep(0.01)
+        self._motor_controller.stop()
+        
