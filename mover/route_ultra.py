@@ -102,5 +102,5 @@ class RouteControl:
         self._motor_controller.spin_left(SpeedSettings.SPEED_MEDIUM)
         for i in range(200):
             print('{},{}'.format(i,
-                 self._sensor_thread.read_data())
+                 self._sensor_thread.read_data()))
             time.sleep(0.01)
