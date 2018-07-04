@@ -8,7 +8,7 @@ import logging
 import time
 import cv2
 from api import (
-    SetupConsoleLogger
+    SetupConsoleLogger,
     CameraThread
 )
 from processor import Processor
