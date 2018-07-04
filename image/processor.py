@@ -20,6 +20,9 @@ class Processor(object):
         self.height = 240
         self.pts = deque(maxlen = 10)
 
+    def cleanup(self):
+        pass
+
     def image_process_entry(self, bgr_image, width, height):
         """
         Called each time an image can be processed
@@ -37,7 +40,7 @@ class Processor(object):
         # construct a mask for the color "green", then perform
         # a series of dilations and erosions to remove any small
         # blobs left in the mask
-        mask = cv2.inRange(hsv, greenLower, greenUpper)
+        mask = cv2.inRange(hsv, green_lower, green_upper)
         mask = cv2.erode(mask, None, iterations=2)
         mask = cv2.dilate(mask, None, iterations=2)
 
