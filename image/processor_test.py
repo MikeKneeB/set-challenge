@@ -7,9 +7,10 @@ Provides the test functionality for the Camera Thread
 import logging
 import time
 import cv2
-import SetupConsoleLogger
-import CameraThread
-
+from api import (
+    SetupConsoleLogger
+    CameraThread
+)
 from processor import Processor
 
 LOGGER = logging.getLogger(__name__)
