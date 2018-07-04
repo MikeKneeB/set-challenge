@@ -73,16 +73,16 @@ class Processor(object):
         self.pts.appendleft(center)
 
         # loop over the set of tracked points
-        for i in range(1, len(pts)):
+        for i in range(1, len(self.pts)):
             # if either of the tracked points are None, ignore
             # them
-            if pts[i - 1] is None or pts[i] is None:
+            if self.pts[i - 1] is None or self.pts[i] is None:
                 continue
 
             # otherwise, compute the thickness of the line and
             # draw the connecting lines
-            thickness = int(np.sqrt(args["buffer"] / float(i + 1)) * 2.5)
-            cv2.line(bgr_image, pts[i - 1], pts[i], (0, 0, 255), thickness)
+            thickness = int(np.sqrt(10 / float(i + 1)) * 2.5)
+            cv2.line(bgr_image, self.pts[i - 1], self.pts[i], (0, 0, 255), thickness)
 
         cv2.imshow('Frame', bgr_image)
 
