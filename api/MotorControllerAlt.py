@@ -4,6 +4,11 @@
 Provides ability to control the motors on the robot.
 """
 
+from config_motors import (
+    LEFT_MOTOR_OFFSET,
+    RIGHT_MOTOR_OFFSET
+)
+
 import logging
 import platform
 if platform.machine() == "armv6l" or platform.machine() == "armv7l":
@@ -98,9 +103,9 @@ class MotorController(object):
         Move each wheel forward
         Sets both motors to move forward at speed. 0 <= speed <= 100
         """
-        self.motor_left_forward.ChangeDutyCycle(speed)
+        self.motor_left_forward.ChangeDutyCycle(speed + LEFT_MOTOR_OFFSET)
         self.motor_left_backward.ChangeDutyCycle(0)
-        self.motor_right_forward.ChangeDutyCycle(speed)
+        self.motor_right_forward.ChangeDutyCycle(speed + RIGHT_MOTOR_OFFSET)
         self.motor_right_backward.ChangeDutyCycle(0)
 
     def reverse(self, speed):
@@ -109,9 +114,9 @@ class MotorController(object):
         Sets both motors to reverse at speed. 0 <= speed <= 100
         """
         self.motor_left_forward.ChangeDutyCycle(0)
-        self.motor_left_backward.ChangeDutyCycle(speed)
+        self.motor_left_backward.ChangeDutyCycle(speed + LEFT_MOTOR_OFFSET)
         self.motor_right_forward.ChangeDutyCycle(0)
-        self.motor_right_backward.ChangeDutyCycle(speed)
+        self.motor_right_backward.ChangeDutyCycle(speed + RIGHT_MOTOR_OFFSET)
 
     def spin_left(self, speed):
         """
@@ -119,8 +124,8 @@ class MotorController(object):
         Sets motors to turn opposite directions at speed. 0 <= speed <= 100
         """
         self.motor_left_forward.ChangeDutyCycle(0)
-        self.motor_left_backward.ChangeDutyCycle(speed)
-        self.motor_right_forward.ChangeDutyCycle(speed)
+        self.motor_left_backward.ChangeDutyCycle(speed + LEFT_MOTOR_OFFSET)
+        self.motor_right_forward.ChangeDutyCycle(speed + RIGHT_MOTOR_OFFSET)
         self.motor_right_backward.ChangeDutyCycle(0)
 
     def spin_right(self, speed):
@@ -128,17 +133,17 @@ class MotorController(object):
         Causes the Robot to rotate right as fast as possible
         Sets motors to turn opposite directions at speed. 0 <= speed <= 100
         """
-        self.motor_left_forward.ChangeDutyCycle(speed)
+        self.motor_left_forward.ChangeDutyCycle(speed + LEFT_MOTOR_OFFSET)
         self.motor_left_backward.ChangeDutyCycle(0)
         self.motor_right_forward.ChangeDutyCycle(0)
-        self.motor_right_backward.ChangeDutyCycle(speed)
+        self.motor_right_backward.ChangeDutyCycle(speed + RIGHT_MOTOR_OFFSET)
 
     def left_forwards(self, speed):
         """
         Causes the Robot to turn right using just one wheel
         Sets just one side to turn. 0 <= speed <= 100
         """
-        self.motor_left_forward.ChangeDutyCycle(speed)
+        self.motor_left_forward.ChangeDutyCycle(speed + LEFT_MOTOR_OFFSET)
         self.motor_left_backward.ChangeDutyCycle(0)
 
     def left_backwards(self, speed):
@@ -147,14 +152,14 @@ class MotorController(object):
         Sets just one side to turn. 0 <= speed <= 100
         """
         self.motor_left_forward.ChangeDutyCycle(0)
-        self.motor_left_backward.ChangeDutyCycle(speed)
+        self.motor_left_backward.ChangeDutyCycle(speed + RIGHT_MOTOR_OFFSET)
 
     def right_forwards(self, speed):
         """
         Causes the Robot to turn right using just one wheel
         Sets just one side to turn. 0 <= speed <= 100
         """
-        self.motor_right_forward.ChangeDutyCycle(speed)
+        self.motor_right_forward.ChangeDutyCycle(speed + RIGHT_MOTOR_OFFSET)
         self.motor_right_backward.ChangeDutyCycle(0)
 
     def right_backwards(self, speed):
@@ -163,16 +168,16 @@ class MotorController(object):
         Sets just one side to turn. 0 <= speed <= 100
         """
         self.motor_right_forward.ChangeDutyCycle(0)
-        self.motor_right_backward.ChangeDutyCycle(speed)
+        self.motor_right_backward.ChangeDutyCycle(speed + RIGHT_MOTOR_OFFSET)
 
     def turn_forward(self, left_speed, right_speed):
         """
         Moves forwards in an arc by setting different speeds.
         0 <= left_speed,right_speed <= 100
         """
-        self.motor_left_forward.ChangeDutyCycle(left_speed)
+        self.motor_left_forward.ChangeDutyCycle(left_speed + LEFT_MOTOR_OFFSET)
         self.motor_left_backward.ChangeDutyCycle(0)
-        self.motor_right_forward.ChangeDutyCycle(right_speed)
+        self.motor_right_forward.ChangeDutyCycle(right_speed + RIGHT_MOTOR_OFFSET)
         self.motor_right_backward.ChangeDutyCycle(0)
 
     def turn_reverse(self, left_speed, right_speed):
@@ -181,6 +186,6 @@ class MotorController(object):
         0 <= left_speed,right_speed <= 100
         """
         self.motor_left_forward.ChangeDutyCycle(0)
-        self.motor_left_backward.ChangeDutyCycle(left_speed)
+        self.motor_left_backward.ChangeDutyCycle(left_speed + LEFT_MOTOR_OFFSET)
         self.motor_right_forward.ChangeDutyCycle(0)
-        self.motor_right_backward.ChangeDutyCycle(right_speed)
+        self.motor_right_backward.ChangeDutyCycle(right_speed + RIGHT_MOTOR_OFFSET)

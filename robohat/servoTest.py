@@ -4,8 +4,8 @@
 import robohat
 
 # Define pins for Pan/Tilt
-pan = 0
-tilt = 1
+pan = 25 
+tilt = 24 
 tVal = 0 # 0 degrees is centre
 pVal = 0 # 0 degrees is centre
 
