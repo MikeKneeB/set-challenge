@@ -33,7 +33,7 @@ def main():
         # Start stream process to handle images and
         # pass then to the callback function
         stream_processor = CameraThread.StreamProcessor(
-            640, 480, image_processor.image_process_entry, True)
+            640, 480, image_processor.image_process_entry, False)
 
         # Wait for the interval period for finishing
         time.sleep(300)

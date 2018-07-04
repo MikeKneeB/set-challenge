@@ -54,7 +54,7 @@ class Processor(object):
         center = None
 
         # only proceed if at least one contour was found
-        if len(cnts) > 0:
+        if cnts:
             # find the largest contour in the mask, then use
             # it to compute the minimum enclosing circle and
             # centroid
@@ -73,6 +73,8 @@ class Processor(object):
 
         self.pts.appendleft(center)
 
+        print(center)
+        
         # loop over the set of tracked points
         for i in range(1, len(self.pts)):
             # if either of the tracked points are None, ignore
