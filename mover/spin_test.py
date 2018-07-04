@@ -15,7 +15,7 @@ if __name__ == '__main__':
         start = time.time()
         motor.spin_left(SpeedSettings.SPEED_MEDIUM)
         while True:
-            sleep(1)
+            time.sleep(1)
     except KeyboardInterrupt:
         pass
     finally:
