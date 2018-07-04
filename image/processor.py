@@ -15,7 +15,6 @@ class Processor(object):
         """
         Constructor
         """
-        LOGGER.debug("Processor constructor called")
 
         self.width = 320
         self.height = 240
