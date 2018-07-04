@@ -23,6 +23,8 @@ def main():
     LOGGER.info("'Camera Capture and stream mechanism' Starting.")
     LOGGER.info("CTRL^C to terminate program")
 
+    image_processor = None
+    stream_processor = None
     try:
         # Create the object that will process the images
         # passed in to the image_process_entry function
@@ -40,9 +42,11 @@ def main():
         LOGGER.info("Stopping 'Camera Capture and stream mechanism'.")
 
     finally:
-        stream_processor.exit_now()
-        stream_processor.join()
-        image_processor.cleanup()
+        if stream_processor is not None:
+            stream_processor.exit_now()
+            stream_processor.join()
+        if image_processor is not None:
+            image_processor.cleanup()
         cv2.destroyAllWindows()
 
     LOGGER.info("'Camera Capture and stream mechanism' Finished.")
