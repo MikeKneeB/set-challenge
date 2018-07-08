@@ -16,6 +16,19 @@ from processor import Processor
 LOGGER = logging.getLogger(__name__)
 SetupConsoleLogger.setup_console_logger(LOGGER, logging.DEBUG)
 
+motor_controller = MotorController.MotorController(
+    GPIOLayout.MOTOR_LEFT_FORWARD_GPIO,
+    GPIOLayout.MOTOR_LEFT_BACKWARD_GPIO,
+    GPIOLayout.MOTOR_RIGHT_FORWARD_GPIO,
+    GPIOLayout.MOTOR_RIGHT_BACKWARD_GPIO
+)
+
+def cb(position):
+    print(position)
+    if position[0] > 280 and position[0] < 320:
+        motor_controller.stop()
+        motor_controller.forward(SpeedSettings.SPEED_FAST)
+
 def main():
     """
     Performs the "Camera Capture and stream mechanism" test
@@ -25,6 +38,8 @@ def main():
 
     image_processor = None
     stream_processor = None
+    motor_controller.stop()
+
     try:
         # Create the object that will process the images
         # passed in to the image_process_entry function
@@ -35,13 +50,14 @@ def main():
         stream_processor = CameraThread.StreamProcessor(
             640, 480, image_processor.image_process_entry, False)
 
-        # Wait for the interval period for finishing
-        time.sleep(300)
+        sleep(1)
+        motor_controller.spin_left(SpeedSettings.SPEED_FASTEST)
 
     except KeyboardInterrupt:
         LOGGER.info("Stopping 'Camera Capture and stream mechanism'.")
 
     finally:
+        motor_controller.stop()
         if stream_processor is not None:
             stream_processor.exit_now()
             stream_processor.join()

@@ -13,7 +13,7 @@ class Processor(object):
     returned by the callback
     """
 
-    def __init__(self):
+    def __init__(self, notify_cb = None):
         """
         Constructor
         """
@@ -21,6 +21,7 @@ class Processor(object):
         self.width = 320
         self.height = 240
         self.pts = deque(maxlen = 10)
+        self.notify_cb = notify_cb
 
     def cleanup(self):
         pass
@@ -74,7 +75,9 @@ class Processor(object):
         self.pts.appendleft(center)
 
         print(center)
-        
+
+        self.notify_cb(center)
+
         # loop over the set of tracked points
         for i in range(1, len(self.pts)):
             # if either of the tracked points are None, ignore
