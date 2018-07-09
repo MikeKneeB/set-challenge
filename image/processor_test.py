@@ -9,7 +9,9 @@ import time
 import cv2
 from api import (
     SetupConsoleLogger,
-    CameraThread
+    CameraThread,
+    MotorController,
+    ServoController
 )
 from processor import Processor
 
@@ -23,9 +25,11 @@ motor_controller = MotorController.MotorController(
     GPIOLayout.MOTOR_RIGHT_BACKWARD_GPIO
 )
 
+servo_controller = ServoController.ServoController()
+
 def cb(position):
     print(position)
-    if position[0] > 280 and position[0] < 320:
+    if position and position[0] > 300 and position[0] < 340:
         motor_controller.stop()
         motor_controller.forward(SpeedSettings.SPEED_FAST)
 
@@ -41,6 +45,10 @@ def main():
     motor_controller.stop()
 
     try:
+        servo_controller.start_servos()
+        sleep(0.5)
+        servo_controller.set_pan_servo(0)
+        servo_controller.set_tilt_servo(0)
         # Create the object that will process the images
         # passed in to the image_process_entry function
         image_processor = Processor(cb)
