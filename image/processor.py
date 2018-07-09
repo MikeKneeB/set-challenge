@@ -76,7 +76,8 @@ class Processor(object):
 
         print(center)
 
-        self.notify_cb(center)
+        if self.notify_cb is not None:
+            self.notify_cb(center)
 
         # loop over the set of tracked points
         for i in range(1, len(self.pts)):
@@ -89,8 +90,6 @@ class Processor(object):
             # draw the connecting lines
             thickness = int(np.sqrt(10 / float(i + 1)) * 2.5)
             cv2.line(bgr_image, self.pts[i - 1], self.pts[i], (0, 0, 255), thickness)
-
-        cv2.imshow('Frame', bgr_image)
 
         # Capture a key press. The function waits argument in ms
         # for any keyboard event
