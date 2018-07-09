@@ -61,6 +61,7 @@ def main():
 
         time.sleep(1)
         motor_controller.spin_left(SpeedSettings.SPEED_FASTEST)
+        time.sleep(300)
 
     except KeyboardInterrupt:
         LOGGER.info("Stopping 'Camera Capture and stream mechanism'.")
