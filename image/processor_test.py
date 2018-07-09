@@ -11,7 +11,8 @@ from api import (
     SetupConsoleLogger,
     CameraThread,
     MotorController,
-    ServoController
+    ServoController,
+    GPIOLayout
 )
 from processor import Processor
 
