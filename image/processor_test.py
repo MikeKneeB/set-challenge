@@ -59,7 +59,7 @@ def main():
         stream_processor = CameraThread.StreamProcessor(
             640, 480, image_processor.image_process_entry, False)
 
-        sleep(1)
+        time.sleep(1)
         motor_controller.spin_left(SpeedSettings.SPEED_FASTEST)
 
     except KeyboardInterrupt:
