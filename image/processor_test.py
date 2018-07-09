@@ -47,7 +47,7 @@ def main():
 
     try:
         servo_controller.start_servos()
-        sleep(0.5)
+        time.sleep(0.5)
         servo_controller.set_pan_servo(0)
         servo_controller.set_tilt_servo(0)
         # Create the object that will process the images
