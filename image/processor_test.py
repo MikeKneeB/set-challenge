@@ -43,7 +43,7 @@ def main():
     try:
         # Create the object that will process the images
         # passed in to the image_process_entry function
-        image_processor = Processor()
+        image_processor = Processor(cb)
 
         # Start stream process to handle images and
         # pass then to the callback function
