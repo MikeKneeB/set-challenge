@@ -1,3 +1,5 @@
 # Gitignore for python code
 __pycache__
 *.pyc
+*/inference_graph.pb
+*log.txt
