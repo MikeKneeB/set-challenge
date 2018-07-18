@@ -29,10 +29,10 @@ from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as vis_util
 
 class ImageProcessor(object):
-    
+
     # Defines class to apply additional processing to the image returned by callback.
-    
-    def __init__(self):
+
+    def __init__(self, im_disp = True):
 
       self.width = 480
       self.height = 360
@@ -40,21 +40,33 @@ class ImageProcessor(object):
       self.bounding_boxes = []
       self.detected_classes = []
       self.confidences = []
+      self.im_disp = im_disp
+      self._thread = threading.Thread(target = self._run, name = "Imaging Thread")
+      self._running = True
 
     def __del__(self):
       self.cleanup()
-    
+
+    def start(self):
+        self._thread.start()
+
+    def _run(self):
+        self.model_preparation()
+
+    def stop(self):
+        self._running = False
+
     def cleanup(self):
       ##Cleanup
       print('Shutting down Object Detection App...')
 
     def model_preparation(self):
-  
+
         camera = PiCamera()
         camera.resolution = (self.width, self.height)
         camera.framerate = 25
         rawCapture = PiRGBArray(camera, size=(self.width, self.height))
-        
+
         # # Model preparation
 
         # ## Variables
@@ -81,7 +93,7 @@ class ImageProcessor(object):
         # In[6]:
         bounding_box_temp = []
         detected_classes_temp = []
-	confidences_temp = []
+    	confidences_temp = []
 
         detection_graph = tf.Graph()
         with detection_graph.as_default():
@@ -114,23 +126,23 @@ class ImageProcessor(object):
 
         # Size, in inches, of the output images.
         IMAGE_SIZE = (12, 8)
-        
+
          # In[10]:
 
         config = tf.ConfigProto()
         NUM_THREADS = 4
         config.intra_op_parallelism_threads=NUM_THREADS
         config.inter_op_parallelism_threads=NUM_THREADS
-                 
+
         with detection_graph.as_default():
           with tf.Session(graph=detection_graph, config=config) as self.sess:
             #while True:
             for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
- 
+
               bounding_boxes_temp = []
               detected_classes_temp = []
-              confidences_temp = []             
- 
+              confidences_temp = []
+
               bgr_image = frame.array
               image_np = np.rot90(np.array(bgr_image), 2)
               # Expand dimensions since the model expects images to have shape: [1, None, None, 3]
@@ -147,15 +159,16 @@ class ImageProcessor(object):
               (boxes, scores, classes, num_detections) = self.sess.run(
                   [boxes, scores, classes, num_detections],
                   feed_dict={image_tensor: image_np_expanded})
-              # Visualization of the results of a detection.
-              vis_util.visualize_boxes_and_labels_on_image_array(
-                  image_np,
-                  np.squeeze(boxes),
-                  np.squeeze(classes).astype(np.int32),
-                  np.squeeze(scores),
-                  category_index,
-                  use_normalized_coordinates=True,
-                  line_thickness=8)
+              # Visualization of the results of a detection. Only do this if asked!!
+              if self.im_disp:
+                  vis_util.visualize_boxes_and_labels_on_image_array(
+                      image_np,
+                      np.squeeze(boxes),
+                      np.squeeze(classes).astype(np.int32),
+                      np.squeeze(scores),
+                      category_index,
+                      use_normalized_coordinates=True,
+                      line_thickness=8)
 
               for i in range(num_detections[0]):
               	  if np.squeeze(scores)[i] > self.confidence_threshold:
@@ -167,16 +180,14 @@ class ImageProcessor(object):
                       detected_classes_temp.append(classes[0][i].astype(np.int32))
                       confidences_temp.append(scores[0][i])
 
-	      self.bounding_boxes = bounding_boxes_temp[:]
-	      self.detected_classes = detected_classes_temp[:]
+	          self.bounding_boxes = bounding_boxes_temp[:]
+	          self.detected_classes = detected_classes_temp[:]
               self.confidences = confidences_temp[:]
 
-              cv2.imshow('object detection', cv2.resize(image_np, (self.width*1, self.height*1)))
+              if self.im_disp: # Only do this if asked!!
+                  cv2.imshow('object detection', cv2.resize(image_np, (self.width*1, self.height*1)))
               rawCapture.truncate(0)
-              
-              if cv2.waitKey(25) & 0xFF == ord('q'):
+
+              if cv2.waitKey(25) & 0xFF == ord('q') or !self._running:
                 cv2.destroyAllWindows()
                 break
-
-image_processor = ImageProcessor()
-image_processor.model_preparation()
