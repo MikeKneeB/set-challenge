@@ -8,6 +8,10 @@ import zipfile
 import time
 import io
 
+import threading
+
+from time import sleep
+
 from collections import defaultdict
 from io import StringIO
 from matplotlib import pyplot as plt
@@ -42,6 +46,8 @@ class ImageProcessor(object):
       self.confidences = []
       self.im_disp = im_disp
       self._thread = threading.Thread(target = self._run, name = "Imaging Thread")
+      self.go_sig = threading.Semaphore(1)
+      self.sem = threading.Semaphore(0)
       self._running = True
 
     def __del__(self):
@@ -55,6 +61,8 @@ class ImageProcessor(object):
 
     def stop(self):
         self._running = False
+        self._thread.join()
+        print("Deathed")
 
     def cleanup(self):
       ##Cleanup
@@ -81,10 +89,11 @@ class ImageProcessor(object):
         MODEL_NAME = 'ssd_mobilenet_v2_pibot_16_07_2018_v7'
 
         # Path to frozen detection graph. This is the actual model that is used for the object detection.
-        PATH_TO_CKPT = 'models/' + MODEL_NAME + '/frozen_inference_graph.pb'
+        ABS_PATH = os.path.dirname(os.path.abspath(__file__))
+        PATH_TO_CKPT = ABS_PATH + '/models/' + MODEL_NAME + '/frozen_inference_graph.pb'
 
         # List of the strings that is used to add correct label for each box.
-        PATH_TO_LABELS = os.path.join('data', 'pibot_label_map.pbtxt')
+        PATH_TO_LABELS = os.path.join(ABS_PATH, 'data', 'pibot_label_map.pbtxt')
 
         NUM_CLASSES = 3
 
@@ -137,13 +146,16 @@ class ImageProcessor(object):
         with detection_graph.as_default():
           with tf.Session(graph=detection_graph, config=config) as self.sess:
             #while True:
+            count = 0
             for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
+              count += 1
 
               bounding_boxes_temp = []
               detected_classes_temp = []
               confidences_temp = []
 
               bgr_image = frame.array
+              cv2.imwrite('image_{}.png'.format(count), bgr_image)
               image_np = np.rot90(np.array(bgr_image), 2)
               # Expand dimensions since the model expects images to have shape: [1, None, None, 3]
               image_np_expanded = np.expand_dims(image_np, axis=0)
@@ -159,6 +171,7 @@ class ImageProcessor(object):
               (boxes, scores, classes, num_detections) = self.sess.run(
                   [boxes, scores, classes, num_detections],
                   feed_dict={image_tensor: image_np_expanded})
+
               # Visualization of the results of a detection. Only do this if asked!!
               if self.im_disp:
                   vis_util.visualize_boxes_and_labels_on_image_array(
@@ -183,11 +196,15 @@ class ImageProcessor(object):
 	          self.bounding_boxes = bounding_boxes_temp[:]
 	          self.detected_classes = detected_classes_temp[:]
               self.confidences = confidences_temp[:]
+              self.sem.release()
 
               if self.im_disp: # Only do this if asked!!
                   cv2.imshow('object detection', cv2.resize(image_np, (self.width*1, self.height*1)))
               rawCapture.truncate(0)
 
-              if cv2.waitKey(25) & 0xFF == ord('q') or !self._running:
+              if cv2.waitKey(25) & 0xFF == ord('q') or not self._running:
                 cv2.destroyAllWindows()
                 break
+
+              self.go_sig.acquire()
+              sleep(0.5)
