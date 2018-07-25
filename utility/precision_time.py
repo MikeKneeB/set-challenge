@@ -39,4 +39,19 @@ def micros():
 
 def millis():
     "return a timestamp in milliseconds (ms)"
-    return monotonic_time()*1e3 #ms 
+    return monotonic_time()*1e3 #ms
+
+#Other timing functions:
+def delay(delay_ms):
+    "delay for delay_ms milliseconds (ms)"
+    t_start = millis()
+    while (millis() - t_start < delay_ms):
+      pass #do nothing
+    return
+
+def delayMicroseconds(delay_us):
+    "delay for delay_us microseconds (us)"
+    t_start = micros()
+    while (micros() - t_start < delay_us):
+      pass #do nothing
+    return

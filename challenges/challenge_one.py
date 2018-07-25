@@ -1,13 +1,17 @@
-from object_detector_app import image_processor
-
 from time import sleep
-
+import argparse
+import sys
+from object_detector_app import image_processor
+from utility.ir_monitor import careful_sleep
 from api import (
     MotorController,
     SpeedSettings,
     GPIOLayout,
     IRSensor
 )
+
+parser = argparse.ArgumentParser()
+parser.add_argument("challenge", type = int, help = "Which challenge to run.")
 
 class Overlord(object):
 
@@ -73,22 +77,63 @@ class Overlord(object):
             total_spins += 1
         return False
 
+    def check_obstacle(self, rev):
+        print("Start obst. check")
+        spins = 0
+        while True:
+            self.imager.go_sig.release()
+            self.imager.sem.acquire()
+            if 1 in self.imager.detected_classes:
+                return False
+            elif spins != 3:
+                self.turn_amt(0.2, rev)
+            else:
+                self.turn_amt(0.6, not rev)
+                return True
+
     def pass_obstacle(self):
+        passing = None
         print("Start obst. pass")
         while True:
             self.imager.go_sig.release()
             self.imager.sem.acquire()
-            ind = self.imager.detected_classes.index(1)
-            box = self.imager.bounding_boxes[ind]
-            box_edge = box[3] + 10
-            box_sz = abs(box[1] - box[3])
-            print("Box edge: {} Box sz: {} Box coords: {},{}".format(box_edge, box_sz, box[1], box[3]))
-            if box_edge < 410 and box_edge > 300:
-                self.forward(0.3)
-            elif box_edge > 410:
-                self.turn(0.05, True)
-            else:
-                self.turn(0.05, False)
+            try:
+                ind = self.imager.detected_classes.index(1)
+                box = self.imager.bounding_boxes[ind]
+                box_mid = (box[1] + box[3]) / 2
+                box_sz = abs(box[1] - box[3])
+                if box_mid > 240:
+                    passing = 'right'
+                    print("@@@@ Box mid > 240")
+                    box_edge = box[1]
+                    print("Box edge: {} Box mid: {} Box sz: {} Box coords: {},{}".format(box_edge, box_mid, box_sz, box[1], box[3]))
+                    if box_edge < 410 and box_edge > 340:
+                        print("Obst pass going forward.")
+                        self.forward(0.3)
+                    elif box_edge > 410:
+                        print("Obst pass turning right")
+                        self.turn(0.07, True)
+                    else:
+                        print("Obst pass turning left")
+                        self.turn(0.07, False)
+                else:
+                    passing = 'left'
+                    print("@@@@ Box mid < 240")
+                    box_edge = box[3]
+                    print("Box edge: {} Box mid: {} Box sz: {} Box coords: {},{}".format(box_edge, box_mid, box_sz, box[1], box[3]))
+                    if box_edge > 70 and box_edge < 140:
+                        print("Obst pass going forward")
+                        self.forward(0.3)
+                    elif box_edge < 70:
+                        print("Obst pass turning right")
+                        self.turn(0.07, False)
+                    else:
+                        print("Obst pass turning left")
+                        self.turn(0.07, True)
+            except ValueError:
+                print("No longer seeing obst. Let's go")
+                self.forward(1.5)
+                return passing
 
     def centre_target(self):
         print("Start centring")
@@ -100,10 +145,11 @@ class Overlord(object):
                 box = self.imager.bounding_boxes[ind]
                 box_mid = (box[1] + box[3]) / 2
                 box_sz = abs(box[1] - box[3])
-                print("Box mid: {} Box sz: {}".format(box_mid, box_sz))
-                if box_mid < 260 and box_mid > 220:
+                print("Box mid: {} Box sz: {} Box coords: {},{}".format(
+                  box_mid, box_sz, box[1], box[3]))
+                if box[1] < 240 and box[3] > 240:
                     return True
-                elif box_mid > 260:
+                elif box[1] > 240:
                     self.turn(0.05, True)
                 else:
                     self.turn(0.05, False)
@@ -114,7 +160,7 @@ class Overlord(object):
     def charge(self):
         print("Start Charge")
         while True:
-            self.forward(0.5)
+            self.forward(1)
             self.imager.go_sig.release()
             self.imager.sem.acquire()
             try:
@@ -124,8 +170,9 @@ class Overlord(object):
                 box_sz = abs(box[1] - box[3])
                 print("Box mid: {} Box sz: {}".format(box_mid, box_sz))
                 if box_mid < 260 and box_mid > 220:
-                    if box_sz > 300:
-                        self.forward(0.4)
+                    if box_sz > 250:
+                        print("Clooooose")
+                        self.forward(1)
                         self.backward(0.4)
                         return True
                     pass
@@ -137,6 +184,7 @@ class Overlord(object):
 
     def challenge(self):
         self.imager.sem.acquire()
+        self.backward(4)
         print('Got imager flag - good to go')
         rev = False
         while True:
@@ -169,17 +217,86 @@ class Overlord(object):
         print('Got imager flag - good to go')
         rev = False
         while True:
-            if self.find_obstacle(rev = rev):
+            if self.find_target(attempts = 6, rev = rev):
+                print("'U'")
+                print("Centring")
+                # if target to left spin_left
+                # if target to the right spin_right
+                ind = self.imager.detected_classes.index(2)
+                box = self.imager.bounding_boxes[ind]
+                box_mid = (box[1] + box[3]) / 2
+                box_sz = abs(box[1] - box[3])
+                print("Box sz: {}".format(box_sz))
+                print("Box mid: {}".format(box_mid))
+                if self.centre_target():
+                    self.charge()
+                else:
+                    self.forward(1)
+                    if box_mid < 240:
+                        rev = False
+                    else:
+                        rev = True
+                    pass
+            elif self.find_obstacle(rev = rev):
                 print("Got a box")
-                self.pass_obstacle()
+                side = self.pass_obstacle()
+                if side == 'right':
+                    while not self.check_obstacle(False):
+                        self.pass_obstacle()
+                elif side == 'left':
+                    while not self.check_obstacle(True):
+                        self.pass_obstacle()
+                else:
+                    print("Freakout")
             else:
                 print("@ @")
                 print(" ^")
 
+    def obst_test(self):
+        self.imager.sem.acquire()
+        print("Lets go")
+        rev = False
+        if self.find_obstacle(attempts = 6, rev = rev):
+            print("Got a box")
+            side = self.pass_obstacle()
+            if side == 'right':
+                while not self.check_obstacle(False):
+                    self.pass_obstacle()
+            elif side == 'left':
+                while not self.check_obstacle(True):
+                    self.pass_obstacle()
+            else:
+                print("Freakout")
+        else:
+            print("@ @")
+            print(" ^")
+
+    def im_test(self):
+        self.imager.sem.acquire()
+        print("Lets go")
+        while True:
+            self.imager.go_sig.release()
+            self.imager.sem.acquire()
+
+    def careful_test(self):
+        self.forward(2)
+
 if __name__ == '__main__':
+    args = parser.parse_args()
     overlord = Overlord()
     try:
-        overlord.challenge_two()
+        if args.challenge == 1:
+            overlord.challenge()
+        elif args.challenge == 2:
+            overlord.challenge_two()
+        elif args.challenge == 10:
+            overlord.im_test()
+        elif args.challenge == 11:
+            overlord.obst_test()
+        elif args.challenge == 12:
+            overlord.careful_test()
+        else:
+            print("I'm afraid I can't do that.")
     except KeyboardInterrupt:
         print("Death")
         pass

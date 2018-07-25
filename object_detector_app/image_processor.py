@@ -44,6 +44,7 @@ class ImageProcessor(object):
       self.bounding_boxes = []
       self.detected_classes = []
       self.confidences = []
+      self.image_np = None
       self.im_disp = im_disp
       self._thread = threading.Thread(target = self._run, name = "Imaging Thread")
       self.go_sig = threading.Semaphore(1)
@@ -61,6 +62,8 @@ class ImageProcessor(object):
 
     def stop(self):
         self._running = False
+        self.go_sig.release()
+        self.sem.release()
         self._thread.join()
         print("Deathed")
 
@@ -156,9 +159,9 @@ class ImageProcessor(object):
 
               bgr_image = frame.array
               cv2.imwrite('image_{}.png'.format(count), bgr_image)
-              image_np = np.rot90(np.array(bgr_image), 2)
+              self.image_np = np.rot90(np.array(bgr_image), 2)
               # Expand dimensions since the model expects images to have shape: [1, None, None, 3]
-              image_np_expanded = np.expand_dims(image_np, axis=0)
+              image_np_expanded = np.expand_dims(self.image_np, axis=0)
               image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
               # Each box represents a part of the image where a particular object was detected.
               boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
@@ -175,7 +178,7 @@ class ImageProcessor(object):
               # Visualization of the results of a detection. Only do this if asked!!
               if self.im_disp:
                   vis_util.visualize_boxes_and_labels_on_image_array(
-                      image_np,
+                      self.image_np,
                       np.squeeze(boxes),
                       np.squeeze(classes).astype(np.int32),
                       np.squeeze(scores),
@@ -189,8 +192,13 @@ class ImageProcessor(object):
                       xmin = boxes[0][i][1] * self.width
                       ymax = boxes[0][i][2] * self.height
                       xmax = boxes[0][i][3] * self.width
-                      bounding_boxes_temp.append([ymin, xmin, ymax, xmax])
+                      if classes[0][i].astype(np.int32) == 1:
+                          cent = ((ymin + ymax) / 2, (xmin + xmax) / 2)
+                          col_total = np.sum(self.image_np[np.int32(cent[0])][np.int32(cent[1])])
+                          if col_total < (255 * 3) * 0.0:
+                              continue
                       detected_classes_temp.append(classes[0][i].astype(np.int32))
+                      bounding_boxes_temp.append([ymin, xmin, ymax, xmax])
                       confidences_temp.append(scores[0][i])
 
 	          self.bounding_boxes = bounding_boxes_temp[:]
@@ -199,7 +207,7 @@ class ImageProcessor(object):
               self.sem.release()
 
               if self.im_disp: # Only do this if asked!!
-                  cv2.imshow('object detection', cv2.resize(image_np, (self.width*1, self.height*1)))
+                  cv2.imshow('object detection', cv2.resize(self.image_np, (self.width*1, self.height*1)))
               rawCapture.truncate(0)
 
               if cv2.waitKey(25) & 0xFF == ord('q') or not self._running:
@@ -207,4 +215,4 @@ class ImageProcessor(object):
                 break
 
               self.go_sig.acquire()
-              sleep(0.5)
+              sleep(0.8)
