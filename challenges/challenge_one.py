@@ -63,7 +63,6 @@ class Overlord(object):
         print("Start find")
         total_spins = 0
         while total_spins != attempts: # Sevenish gets a full circle or so
-            self.turn(turn_amt, rev)
             self.imager.go_sig.release()
             # Classes are:
             #   1 = obstacle
@@ -74,6 +73,7 @@ class Overlord(object):
             #if 2 in self.imager.detected_classes:
             if self.check_for_target():
                 return True
+            self.turn(turn_amt, rev)
             total_spins += 1
         return False
 
@@ -81,13 +81,13 @@ class Overlord(object):
         print("Start obst find")
         total_spins = 0
         while total_spins != attempts:
-            self.turn(turn_amt, rev)
             self.imager.go_sig.release()
             self.imager.sem.acquire()
             print("Got signal from imager that an image is ready")
             print(self.imager.detected_classes)
             if thing in self.imager.detected_classes:
                 return True
+            self.turn(turn_amt, rev)
             total_spins += 1
         return False
 
