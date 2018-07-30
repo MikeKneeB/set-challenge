@@ -113,17 +113,17 @@ class Overlord(object):
             spins += 1
 
     def check_for_target(self):
-        if 2 in self.imager.detected_class:
+        if 2 in self.imager.detected_classes:
             print("There is a target")
             obscured = 0
             target_ind = self.imager.detected_classes.index(2)
             obst_indices = [i for i, x in enumerate(self.imager.detected_classes) if x == 1 or x == 3]
             target_box = self.imager.bounding_boxes[target_ind]
             for i in obst_indices:
-                if (self.imager.bounding_boxes[i][1] < target_box[3] + 10
-                 or self.imager.bounding_boxes[i][1] > target_box[3] - 10
-                 or self.imager.bounding_boxes[i][3] < target_box[1] + 10
-                 or self.imager.bounding_boxes[i][3] > target_box[1] - 10):
+                if (self.imager.bounding_boxes[i][1] < target_box[3] + 20
+                 or self.imager.bounding_boxes[i][1] > target_box[3] - 20
+                 or self.imager.bounding_boxes[i][3] < target_box[1] + 20
+                 or self.imager.bounding_boxes[i][3] > target_box[1] - 20):
                     print("An obstacle or decoy is close...")
                     obstacle_sz = abs(self.imager.bounding_boxes[i][1] - self.imager.bounding_boxes[i][3])
                     target_sz = abs(target_box[1] - target_box[3])
@@ -135,10 +135,10 @@ class Overlord(object):
                 else:
                     print("That obstacle is far from the target.")
             if obscured == 0:
-                print("We saw an obstacle and we don't think it is obscured")
+                print("We saw a target and we don't think it is obscured")
                 return True
             else:
-                print("We saw an obstacle but it looks like something is in front of it")
+                print("We saw a target but it looks like something is in front of it")
                 return False
         else:
             print("No target in sight")
@@ -356,24 +356,49 @@ class Overlord(object):
             print("Exploring")
             self.explore()
 
-    def careful_test(self):
-        self.forward(2)
+    def target_checker_test(self):
+        self.imager.sem.acquire()
+        while True:
+            self.imager.go_sig.release()
+            self.imager.sem.acquire()
+            if self.check_for_target():
+                print("'U'")
+            else:
+                print("*_*")
 
 if __name__ == '__main__':
     args = parser.parse_args()
     overlord = Overlord()
     try:
         if args.challenge == 1:
+            print("#" * 80)
+            print("Start challenge one!")
+            print("#" * 80)
             overlord.challenge()
         elif args.challenge == 2:
+            print("#" * 80)
+            print("Start challenge != one")
+            print("#" * 80)
             overlord.challenge_two()
         elif args.challenge == 10:
+            print("#" * 80)
+            print("Start im_test")
+            print("#" * 80)
             overlord.im_test()
         elif args.challenge == 11:
+            print("#" * 80)
+            print("Start obst_test")
+            print("#" * 80)
             overlord.obst_test()
         elif args.challenge == 12:
-            overlord.careful_test()
+            print("#" * 80)
+            print("Start target check test")
+            print("#" * 80)
+            overlord.target_checker_test()
         elif args.challenge == 13:
+            print("#" * 80)
+            print("Start explore_test")
+            print("#" * 80)
             overlord.explore_test()
         else:
             print("I'm afraid I can't do that.")
