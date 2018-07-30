@@ -89,7 +89,7 @@ class ImageProcessor(object):
         # In[4]:
 
         # What model to download.
-        MODEL_NAME = 'ssd_mobilenet_v2_pibot_16_07_2018_v7'
+        MODEL_NAME = 'ssd_mobilenet_v2_pibot_26_07_2018_v5'
 
         # Path to frozen detection graph. This is the actual model that is used for the object detection.
         ABS_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -150,7 +150,7 @@ class ImageProcessor(object):
           with tf.Session(graph=detection_graph, config=config) as self.sess:
             #while True:
             count = 0
-            for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
+            for frame in camera.capture_continuous(rawCapture, format="rgb", use_video_port=True):
               count += 1
 
               bounding_boxes_temp = []
@@ -158,7 +158,7 @@ class ImageProcessor(object):
               confidences_temp = []
 
               bgr_image = frame.array
-              cv2.imwrite('image_{}.png'.format(count), bgr_image)
+              #cv2.imwrite('image_{}.png'.format(count), bgr_image)
               self.image_np = np.rot90(np.array(bgr_image), 2)
               # Expand dimensions since the model expects images to have shape: [1, None, None, 3]
               image_np_expanded = np.expand_dims(self.image_np, axis=0)
@@ -195,7 +195,7 @@ class ImageProcessor(object):
                       if classes[0][i].astype(np.int32) == 1:
                           cent = ((ymin + ymax) / 2, (xmin + xmax) / 2)
                           col_total = np.sum(self.image_np[np.int32(cent[0])][np.int32(cent[1])])
-                          if col_total < (255 * 3) * 0.0:
+                          if col_total < 100:
                               continue
                       detected_classes_temp.append(classes[0][i].astype(np.int32))
                       bounding_boxes_temp.append([ymin, xmin, ymax, xmax])
@@ -215,4 +215,4 @@ class ImageProcessor(object):
                 break
 
               self.go_sig.acquire()
-              sleep(0.8)
+              sleep(0.5)
