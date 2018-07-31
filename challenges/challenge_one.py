@@ -51,15 +51,15 @@ class Overlord(object):
 
     def explore(self):
         self.motor.forward(SpeedSettings.SPEED_FAST)
-        for i in range(50):
-            sleep(0.1)
+        for i in range(100):
+            sleep(0.05)
             if self.long_ir.ir_active():
                 self.motor.stop()
                 ran_turn = random() * 0.8
                 self.turn(0.2 + ran_turn)
                 self.motor.forward(SpeedSettings.SPEED_FAST)
 
-    def find_target(self, attempts = 20, turn_amt = 0.3, rev = False):
+    def find_target(self, attempts = 10, turn_amt = 0.3, rev = False):
         print("Start find")
         total_spins = 0
         while total_spins != attempts: # Sevenish gets a full circle or so
@@ -77,7 +77,7 @@ class Overlord(object):
             total_spins += 1
         return False
 
-    def find_obstacle(self, attempts = 20, turn_amt = 0.3, rev = False, thing = 1):
+    def find_obstacle(self, attempts = 10, turn_amt = 0.3, rev = False, thing = 1):
         print("Start obst find")
         total_spins = 0
         while total_spins != attempts:
@@ -90,6 +90,22 @@ class Overlord(object):
             self.turn(turn_amt, rev)
             total_spins += 1
         return False
+
+    def find_either(self, attempts = 10, turn_amt = 0.3, rev = False):
+        print("Start obst/decoy find")
+        total_spins = 0
+        while total_spins != attempts:
+            self.imager.go_sig.release()
+            self.imager.sem.acquire()
+            print("Got signal from imager that an image is ready")
+            print(self.imager.detected_classes)
+            if 1 in self.imager.detected_classes:
+                return 1
+            elif 3 in self.imager.detected_classes:
+                return 3
+            self.turn(turn_amt, rev)
+            total_spins += 1
+        return 0
 
     def check_obstacle(self, rev, thing = 1):
         print("Start obst. check - going {}".format(rev))
@@ -120,10 +136,10 @@ class Overlord(object):
             obst_indices = [i for i, x in enumerate(self.imager.detected_classes) if x == 1 or x == 3]
             target_box = self.imager.bounding_boxes[target_ind]
             for i in obst_indices:
-                if (self.imager.bounding_boxes[i][1] < target_box[3] + 20
-                 or self.imager.bounding_boxes[i][1] > target_box[3] - 20
-                 or self.imager.bounding_boxes[i][3] < target_box[1] + 20
-                 or self.imager.bounding_boxes[i][3] > target_box[1] - 20):
+                if ((self.imager.bounding_boxes[i][1] < target_box[3] + 20
+                 and self.imager.bounding_boxes[i][1] > target_box[3] - 20)
+                 or (self.imager.bounding_boxes[i][3] < target_box[1] + 20
+                 and self.imager.bounding_boxes[i][3] > target_box[1] - 20)):
                     print("An obstacle or decoy is close...")
                     obstacle_sz = abs(self.imager.bounding_boxes[i][1] - self.imager.bounding_boxes[i][3])
                     target_sz = abs(target_box[1] - target_box[3])
@@ -307,22 +323,81 @@ class Overlord(object):
                        self.pass_obstacle()
                 else:
                     print("Freakout")
-            elif self.find_obstacle(rev = rev, thing = 3):
-                print("It's a trap.")
-                side = self.pass_obstacle()
-                print("Side: {}".format(side))
-                if side == 'left':
-                    if self.check_obstacle(False):
-                        self.pass_obstacle()
-                    elif side == 'right':
-                        if self.check_obstacle(True):
-                            self.pass_obstacle()
-                        else:
-                            print("Freakout")
             else:
                 self.explore()
                 print("@ @")
                 print(" ^")
+
+    def challenge_three(self):
+            self.imager.sem.acquire()
+            print('Got imager flag - good to go')
+            rev = False
+            while True:
+                if self.find_target(attempts = 10, turn_amt = 0.2, rev = rev):
+                    print("'U'")
+                    print("Centring")
+                    # if target to left spin_left
+                    # if target to the right spin_right
+                    ind = self.imager.detected_classes.index(2)
+                    box = self.imager.bounding_boxes[ind]
+                    box_mid = (box[1] + box[3]) / 2
+                    box_sz = abs(box[1] - box[3])
+                    print("Box sz: {}".format(box_sz))
+                    print("Box mid: {}".format(box_mid))
+                    if self.centre_target():
+                        self.charge()
+                    else:
+                        self.forward(1)
+                        if box_mid < 240:
+                            rev = False
+                        else:
+                            rev = True
+                # else:
+                #     thing = self.find_either()
+                #     if thing != 0:
+                #         print("Got a thing")
+                #         side = self.pass_obstacle()
+                #         print("Side: {}".format(side))
+                #         if side == 'left':
+                #             if self.check_obstacle(False, thing = thing):
+                #                 self.pass_obstacle(thing = thing)
+                #         elif side == 'right':
+                #             if self.check_obstacle(True, thing = thing):
+                #                 self.pass_obstacle(thing = thing)
+                #         else:
+                #             print("Freakout")
+                #     else:
+                #         self.explore()
+                #         print("@ @")
+                #         print(" ^")
+                elif self.find_obstacle(rev = rev):
+                    print("Got a box")
+                    side = self.pass_obstacle()
+                    print("Side: {}".format(side))
+                    if side == 'left':
+                       if self.check_obstacle(False):
+                           self.pass_obstacle()
+                    elif side == 'right':
+                       if self.check_obstacle(True):
+                           self.pass_obstacle()
+                    else:
+                        print("Freakout")
+                elif self.find_obstacle(rev = rev, thing = 3):
+                    print("It's a trap.")
+                    side = self.pass_obstacle()
+                    print("Side: {}".format(side))
+                    if side == 'left':
+                        if self.check_obstacle(False):
+                            self.pass_obstacle()
+                        elif side == 'right':
+                            if self.check_obstacle(True):
+                                self.pass_obstacle()
+                            else:
+                                print("Freakout")
+                else:
+                    self.explore()
+                    print("@ @")
+                    print(" ^")
 
     def obst_test(self):
         self.imager.sem.acquire()
@@ -377,9 +452,14 @@ if __name__ == '__main__':
             overlord.challenge()
         elif args.challenge == 2:
             print("#" * 80)
-            print("Start challenge != one")
+            print("Start challenge two")
             print("#" * 80)
             overlord.challenge_two()
+        elif args.challenge == 3:
+            print("#" * 80)
+            print("Start challenge >= three")
+            print("#" * 80)
+            overlord.challenge_three()
         elif args.challenge == 10:
             print("#" * 80)
             print("Start im_test")

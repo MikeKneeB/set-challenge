@@ -195,7 +195,7 @@ class ImageProcessor(object):
                       if classes[0][i].astype(np.int32) == 1:
                           cent = ((ymin + ymax) / 2, (xmin + xmax) / 2)
                           col_total = np.sum(self.image_np[np.int32(cent[0])][np.int32(cent[1])])
-                          if col_total < 100:
+                          if col_total < 300:
                               continue
                       detected_classes_temp.append(classes[0][i].astype(np.int32))
                       bounding_boxes_temp.append([ymin, xmin, ymax, xmax])
